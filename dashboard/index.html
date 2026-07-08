@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fire TV 出货量看板</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="brand-block">
+        <div class="brand-mark" aria-hidden="true">FTV</div>
+        <div>
+          <h1>Fire TV 出货量看板</h1>
+          <p id="dataSubtitle">正在载入本地数据...</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <div class="data-stamp">
+          <span>数据日期</span>
+          <strong id="dataAsOf">--</strong>
+        </div>
+        <button class="command-button" id="importButton" type="button">
+          <i data-lucide="file-up"></i>
+          <span>导入数据</span>
+        </button>
+        <input id="dataFileInput" type="file" accept=".json,application/json" hidden>
+      </div>
+    </header>
+
+    <section class="run-status-banner" id="runStatusBanner" hidden>
+      <div>
+        <strong id="runStatusTitle">刷新状态</strong>
+        <p id="runStatusMessage"></p>
+      </div>
+      <div class="run-status-side">
+        <span id="runStatusTime"></span>
+        <button class="banner-close" id="runStatusClose" type="button" title="Close" aria-label="Close">×</button>
+      </div>
+    </section>
+
+    <section class="run-status-banner warning-banner" id="missingEngineerBanner" data-level="warning" hidden>
+      <div>
+        <strong id="missingEngineerTitle">人员ID未匹配</strong>
+        <p id="missingEngineerMessage"></p>
+      </div>
+      <div class="run-status-side">
+        <span id="missingEngineerTime"></span>
+        <button class="banner-close" id="missingEngineerClose" type="button" title="Close" aria-label="Close">×</button>
+      </div>
+    </section>
+
+    <section class="filter-band" aria-label="看板筛选">
+      <div class="filter-inner">
+        <div class="segmented-control" id="grainControl" aria-label="统计粒度">
+          <button type="button" data-grain="year">按年</button>
+          <button type="button" data-grain="quarter" class="active">按季度</button>
+          <button type="button" data-grain="month">按月</button>
+        </div>
+
+        <label class="filter-field compact-field">
+          <span>开始</span>
+          <select id="startYear"></select>
+        </label>
+        <label class="filter-field compact-field">
+          <span>结束</span>
+          <select id="endYear"></select>
+        </label>
+
+        <div class="filter-field customer-filter" id="customerFilter">
+          <span>客户</span>
+          <button class="select-button" id="customerButton" type="button" aria-expanded="false">
+            <span id="customerLabel">全部客户</span>
+            <i data-lucide="chevron-down"></i>
+          </button>
+          <div class="check-popover" id="customerPopover" hidden>
+            <div class="check-popover-actions">
+              <button type="button" id="selectAllCustomers">全选</button>
+              <button type="button" id="clearCustomers">清空</button>
+            </div>
+            <div id="customerOptions"></div>
+          </div>
+        </div>
+
+        <label class="filter-field">
+          <span>产品平台</span>
+          <select id="categoryFilter"></select>
+        </label>
+        <label class="filter-field">
+          <span>项目</span>
+          <select id="projectFilter"></select>
+        </label>
+        <label class="filter-field">
+          <span>区域</span>
+          <select id="regionFilter"></select>
+        </label>
+
+        <label class="filter-field search-field">
+          <span>机芯 / 项目搜索</span>
+          <div class="search-input-wrap">
+            <i data-lucide="search"></i>
+            <input id="engineSearch" type="search" placeholder="输入机芯编码或项目">
+          </div>
+        </label>
+
+        <button class="icon-button" id="resetFilters" type="button" title="重置全部筛选" aria-label="重置全部筛选">
+          <i data-lucide="rotate-ccw"></i>
+        </button>
+      </div>
+
+      <details class="advanced-filter-wrap" id="advancedFilters">
+        <summary>
+          <span>高级筛选</span>
+          <span class="filter-count" id="advancedFilterCount">0</span>
+        </summary>
+        <div class="advanced-filter-grid">
+          <label class="filter-field">
+            <span>机芯方案</span>
+            <select id="chipFilter"></select>
+          </label>
+          <label class="filter-field">
+            <span>BOM区域</span>
+            <select id="bomRegionFilter"></select>
+          </label>
+          <label class="filter-field">
+            <span>合作模式</span>
+            <select id="cooperationFilter"></select>
+          </label>
+          <label class="filter-field">
+            <span>系统版本</span>
+            <select id="osFilter"></select>
+          </label>
+        </div>
+      </details>
+    </section>
+
+    <main class="dashboard-main">
+      <section class="kpi-grid" aria-label="关键指标">
+        <article class="kpi-card accent-blue">
+          <div class="kpi-heading"><span id="currentPeriodLabel">本期出货量</span><i data-lucide="calendar-range"></i></div>
+          <strong id="currentPeriodValue">--</strong>
+          <p id="currentPeriodNote">--</p>
+        </article>
+        <article class="kpi-card accent-teal">
+          <div class="kpi-heading"><span>同比变化</span><i data-lucide="trending-up"></i></div>
+          <strong id="yoyValue">--</strong>
+          <p id="yoyNote">--</p>
+        </article>
+        <article class="kpi-card accent-orange">
+          <div class="kpi-heading"><span>筛选区间总量</span><i data-lucide="package-check"></i></div>
+          <strong id="selectedTotalValue">--</strong>
+          <p id="selectedTotalNote">--</p>
+        </article>
+        <article class="kpi-card accent-rose">
+          <div class="kpi-heading"><span>覆盖客户</span><i data-lucide="users"></i></div>
+          <strong id="customerCountValue">--</strong>
+          <p id="customerCountNote">--</p>
+        </article>
+      </section>
+
+      <section class="chart-grid">
+        <article class="panel trend-panel">
+          <div class="panel-header">
+            <div>
+              <h2>整体出货趋势</h2>
+              <p>柱形为出货量，折线为同比变化</p>
+            </div>
+            <div class="panel-tools">
+              <div class="legend-row">
+                <span><i class="legend-swatch bar-swatch"></i>出货量</span>
+                <span><i class="legend-swatch line-swatch"></i>同比</span>
+              </div>
+              <label class="switch-control" title="显示或隐藏趋势图数据标签">
+                <input id="trendLabelToggle" type="checkbox">
+                <span class="switch-track" aria-hidden="true"></span>
+                <span>数据标签</span>
+              </label>
+            </div>
+          </div>
+          <div class="chart-canvas" id="overallTrendChart" role="img" aria-label="整体出货趋势图"></div>
+        </article>
+
+        <article class="panel ranking-panel">
+          <div class="panel-header">
+            <div>
+              <h2>客户出货量排行</h2>
+              <p id="rankingPeriodLabel">当前筛选区间</p>
+            </div>
+          </div>
+          <div class="ranking-list" id="customerRanking"></div>
+        </article>
+
+        <article class="panel multiples-panel">
+          <div class="panel-header">
+            <div>
+              <h2>各客户趋势</h2>
+              <p>统一时间范围，分别观察变化</p>
+            </div>
+          </div>
+          <div class="small-multiples" id="customerSmallMultiples"></div>
+        </article>
+
+        <article class="panel composition-panel">
+          <div class="panel-header">
+            <div>
+              <h2>客户构成</h2>
+              <p>按筛选区间累计量计算</p>
+            </div>
+          </div>
+          <div class="composition-content">
+            <div class="donut-chart" id="customerDonut"></div>
+            <div class="composition-legend" id="compositionLegend"></div>
+          </div>
+        </article>
+      </section>
+
+      <section class="panel detail-panel">
+        <div class="panel-header detail-header">
+          <div>
+            <h2>项目出货明细</h2>
+            <p id="detailSummary">--</p>
+          </div>
+          <button class="command-button subtle" id="exportDetail" type="button">
+            <i data-lucide="download"></i>
+            <span>导出明细</span>
+          </button>
+        </div>
+        <div class="table-scroll">
+          <table class="data-table detail-table" id="detailTable">
+            <thead></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <details class="audit-section" id="auditSection">
+        <summary>
+          <div>
+            <strong>统计口径与原始订单核查</strong>
+            <span id="auditSummaryLine">--</span>
+          </div>
+          <i data-lucide="chevron-down"></i>
+        </summary>
+        <div class="audit-body">
+          <div class="audit-rule-strip" id="auditRuleStrip"></div>
+          <div class="audit-toolbar">
+            <div class="segmented-control compact" id="auditModeControl">
+              <button type="button" data-mode="all" class="active">全部</button>
+              <button type="button" data-mode="included">计入</button>
+              <button type="button" data-mode="excluded">排除</button>
+            </div>
+            <label class="audit-search">
+              <i data-lucide="search"></i>
+              <input id="auditSearch" type="search" placeholder="订单号、BOM、业务部或SPM">
+            </label>
+            <span class="audit-result-count" id="auditResultCount">--</span>
+          </div>
+          <div class="table-scroll audit-table-wrap">
+            <table class="data-table audit-table" id="auditTable">
+              <thead>
+                <tr>
+                  <th>订单编号</th><th>客户 / 项目</th><th>机芯编码</th><th>数量</th>
+                  <th>状态</th><th>统计结果</th><th>归属日期</th><th>业务部</th>
+                  <th>BOM</th><th>SPM</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <div class="pagination">
+            <button class="icon-button" id="auditPrev" type="button" title="上一页" aria-label="上一页"><i data-lucide="chevron-left"></i></button>
+            <span id="auditPageLabel">第 1 页</span>
+            <button class="icon-button" id="auditNext" type="button" title="下一页" aria-label="下一页"><i data-lucide="chevron-right"></i></button>
+          </div>
+        </div>
+      </details>
+    </main>
+  </div>
+
+  <div class="chart-tooltip" id="chartTooltip" hidden></div>
+  <div class="toast" id="toast" role="status" hidden></div>
+
+  <script src="dashboard-data.js"></script>
+  <script src="dashboard-run-status.js"></script>
+  <script type="application/json" id="legacyRunStatusScript">
+    (() => {
+      const status = window.FTV_RUN_STATUS;
+      if (!status) return;
+      const banner = document.getElementById("runStatusBanner");
+      banner.dataset.level = status.level || "info";
+      document.getElementById("runStatusTitle").textContent = status.title || "刷新状态";
+      document.getElementById("runStatusMessage").textContent = status.message || "";
+      document.getElementById("runStatusTime").textContent = status.attemptedAt || "";
+      banner.hidden = false;
+    })();
+  </script>
+  <script>
+    (() => {
+      const status = window.FTV_RUN_STATUS;
+      if (!status) return;
+
+      const uaKey = String(navigator.userAgent || "ua").replace(/\W+/g, "_").slice(0, 80);
+      const storagePrefix = "ftv-dashboard-dismissed";
+
+      function isDismissed(key) {
+        try { return localStorage.getItem(key) === "1"; }
+        catch (_) { return false; }
+      }
+
+      function dismiss(key, banner) {
+        try { localStorage.setItem(key, "1"); }
+        catch (_) {}
+        banner.hidden = true;
+      }
+
+      const banner = document.getElementById("runStatusBanner");
+      const statusKey = `${storagePrefix}:run:${uaKey}:${status.statusKey || `${status.level}|${status.cutoffDate}|${status.attemptedAt}`}`;
+      if (banner && !isDismissed(statusKey)) {
+        banner.dataset.level = status.level || "info";
+        document.getElementById("runStatusTitle").textContent = status.title || "刷新状态";
+        document.getElementById("runStatusMessage").textContent = status.message || "";
+        document.getElementById("runStatusTime").textContent = status.attemptedAt || "";
+        document.getElementById("runStatusClose").addEventListener("click", () => dismiss(statusKey, banner));
+        banner.hidden = false;
+      }
+
+      const missingWarning = (status.warnings || []).find((item) => item && item.id === "missing_engineer_ids");
+      const missingBanner = document.getElementById("missingEngineerBanner");
+      if (missingWarning && missingBanner) {
+        const warningKey = `${storagePrefix}:warning:${uaKey}:${missingWarning.id}:${missingWarning.version || "current"}`;
+        if (!isDismissed(warningKey)) {
+          document.getElementById("missingEngineerTitle").textContent = missingWarning.title || "人员ID未匹配";
+          document.getElementById("missingEngineerMessage").textContent = missingWarning.message || "";
+          document.getElementById("missingEngineerTime").textContent = missingWarning.resetWhen ? `下次提醒：${missingWarning.resetWhen}` : "";
+          document.getElementById("missingEngineerClose").addEventListener("click", () => dismiss(warningKey, missingBanner));
+          missingBanner.hidden = false;
+        }
+      }
+    })();
+  </script>
+  <script src="assets/lucide.min.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>

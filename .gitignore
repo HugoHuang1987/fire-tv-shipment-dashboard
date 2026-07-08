@@ -1,0 +1,39 @@
+# Runtime and generated data
+dashboard/dashboard-data.json
+dashboard/dashboard-data.js
+dashboard/calculation-data.json
+dashboard/*.xlsx
+dashboard/*.inspect.ndjson
+dashboard/.data-source-success
+dashboard/.qa*/
+dashboard/node_modules/
+
+# Business/private inputs
+*.csv
+!config/*.example.csv
+*.xlsx
+*.xls
+*.pptx
+*.docx
+人员名单.txt
+*engineer-ids*.csv
+*source-conflicts*.xlsx
+*wiki-sync-alerts*.xlsx
+logs/
+history/
+raw/
+patch/
+rdm-snapshots/
+
+# Secrets and local environment
+.env
+*.secret.*
+*.token.*
+config/local.*
+
+# Python/Node/cache
+__pycache__/
+*.pyc
+node_modules/
+.cache/
+.tmp/
