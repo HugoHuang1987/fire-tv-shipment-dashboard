@@ -112,6 +112,8 @@ if "%BUILD_STATUS%"=="2" (
 copy /Y "%~dp0index.html" "%RULE_DEST%\dashboard\index.html" >nul
 copy /Y "%~dp0dashboard-data.json" "%RULE_DEST%\dashboard\dashboard-data.json" >nul
 copy /Y "%~dp0dashboard-data.js" "%RULE_DEST%\dashboard\dashboard-data.js" >nul
+if exist "%~dp0scheduler-status.json" copy /Y "%~dp0scheduler-status.json" "%RULE_DEST%\dashboard\scheduler-status.json" >nul
+if exist "%~dp0scheduler-status.js" copy /Y "%~dp0scheduler-status.js" "%RULE_DEST%\dashboard\scheduler-status.js" >nul
 if not exist "%RULE_DEST%\dashboard\assets" mkdir "%RULE_DEST%\dashboard\assets"
 copy /Y "%~dp0assets\styles.css" "%RULE_DEST%\dashboard\assets\styles.css" >nul
 copy /Y "%~dp0assets\app.js" "%RULE_DEST%\dashboard\assets\app.js" >nul

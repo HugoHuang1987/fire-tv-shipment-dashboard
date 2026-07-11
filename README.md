@@ -9,6 +9,9 @@
 - `tools/Invoke-RdmDownload.ps1`：按人员和时间范围从 RDM 下载原始订单。
 - `tools/merge_rdm_snapshot.py`：按订单号滚动合并 RDM 快照，数量变化阻断，机芯按 8 个月窗口内最新快照更新。
 - `tools/Invoke-FireTvMonthlyRefresh.ps1`：月度无人值守主流程。
+- `tools/Invoke-FireTvRefreshGate.ps1`：每周轻量检查入口，本月已成功时立即退出。
+- `tools/Register-FireTvScheduledTask.ps1`：安装每周一运行、错过后补跑的 Windows 计划任务。
+- `tools/Update-FireTvTaskStatus.ps1`：读取任务、检查和月度刷新状态，供 Dashboard 展示。
 - `dashboard/build_data.py`：按 rule 和 calculation-rules 计算统计明细。
 - `dashboard/export_data_source.mjs`：输出统一数据源、异常清单和人工查看 Excel。
 - `dashboard/index.html` + `dashboard/assets/`：本地看板页面。
@@ -46,6 +49,22 @@ $env:FIRE_TV_SKIP_WIKI = "1"
 .\tools\Invoke-FireTvMonthlyRefresh.ps1
 ```
 
+安装 Windows 每周检查任务：
+
+```powershell
+.\tools\Register-FireTvScheduledTask.ps1
+```
+
+计划任务默认名为 `Fire TV 出货量每周检查`，每周一 09:00 运行，并启用 `StartWhenAvailable`：电脑关机错过计划时间后，会在 Windows 下次可用时补跑。本月已有 `logs/monthly-success-YYYYMM.json` 成功标记时只记录检查，不会重复下载和发布。
+
+Dashboard 右上角的“检查任务状态”会显示最近检测、判断、上次/下次任务时间和最近成功刷新。也可以运行：
+
+```powershell
+.\tools\Update-FireTvTaskStatus.ps1 -Show
+```
+
+Windows 计划任务直接运行本地 PowerShell 脚本，不需要启动 Codex。
+
 单独测试 RDM 下载：
 
 ```powershell
@@ -57,5 +76,5 @@ $env:FIRE_TV_SKIP_WIKI = "1"
 - 原始订单数据、RDM 快照、补丁数据、统计输出 Excel。
 - 人员名单和工程师 ID 表。
 - Wiki 快照、冲突清单、告警文件、执行日志。
+- Dashboard 数据、刷新状态和 Windows 任务状态快照。
 - 任何 token、key、webhook、邮箱或企业内部凭证。
-

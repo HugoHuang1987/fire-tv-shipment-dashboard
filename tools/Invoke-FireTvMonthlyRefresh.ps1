@@ -9,7 +9,7 @@
 
 $ErrorActionPreference = "Stop"
 $Workspace = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot "..")).Path
-$DashboardDir = Join-Path $Workspace "outputs\fire_tv_dashboard"
+$DashboardDir = Join-Path $Workspace "dashboard"
 if (-not $SharedRoot) { throw "FIRE_TV_SHARED_ROOT or -SharedRoot is required." }
 if (-not $Python) { $Python = "python" }
 $NotifyScript = Join-Path $DashboardDir "Send-FireTvNotification.ps1"
@@ -170,7 +170,7 @@ try {
             -StartDate $startDate -EndDate $endDate -PageSize 200 -OutputDir $downloadWorkDir *>&1 | Tee-Object -FilePath $runLog -Append
         $downloadExit = $LASTEXITCODE
         Copy-DirectoryWithRetry -SourceDir $downloadWorkDir -DestinationDir $downloadDir
-        [System.IO.File]::WriteAllText((Join-Path $Workspace "outputs\latest_rdm_download_path.txt"), $downloadDir, (New-Object System.Text.UTF8Encoding($true)))
+        [System.IO.File]::WriteAllText((Join-Path $LogsDir "latest-rdm-download-path.txt"), $downloadDir, (New-Object System.Text.UTF8Encoding($true)))
         "Published RDM snapshot: $downloadDir" | Add-Content -LiteralPath $runLog -Encoding UTF8
         try {
             Remove-Item -LiteralPath $downloadWorkDir -Recurse -Force

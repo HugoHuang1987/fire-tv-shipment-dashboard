@@ -2,6 +2,10 @@
 dashboard/dashboard-data.json
 dashboard/dashboard-data.js
 dashboard/calculation-data.json
+dashboard/dashboard-run-status.json
+dashboard/dashboard-run-status.js
+dashboard/scheduler-status.json
+dashboard/scheduler-status.js
 dashboard/*.xlsx
 dashboard/*.inspect.ndjson
 dashboard/.data-source-success

@@ -21,6 +21,10 @@
           <span>数据日期</span>
           <strong id="dataAsOf">--</strong>
         </div>
+        <button class="command-button subtle" id="taskStatusButton" type="button" title="检查Windows计划任务状态">
+          <i data-lucide="activity"></i>
+          <span>检查任务状态</span>
+        </button>
         <button class="command-button" id="importButton" type="button">
           <i data-lucide="file-up"></i>
           <span>导入数据</span>
@@ -281,8 +285,66 @@
   <div class="chart-tooltip" id="chartTooltip" hidden></div>
   <div class="toast" id="toast" role="status" hidden></div>
 
+  <dialog class="task-status-dialog" id="taskStatusDialog" aria-labelledby="taskStatusDialogTitle">
+    <div class="task-status-header">
+      <div>
+        <span class="task-status-kicker">WINDOWS TASK</span>
+        <h2 id="taskStatusDialogTitle">出货量自动检查</h2>
+      </div>
+      <button class="icon-button" id="taskStatusClose" type="button" title="关闭" aria-label="关闭">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+    <div class="task-status-summary" id="taskStatusHealth" data-health="unknown">
+      <span class="task-status-indicator" aria-hidden="true"></span>
+      <div>
+        <strong id="taskStatusTitle">正在读取任务状态</strong>
+        <p id="taskStatusMessage">--</p>
+      </div>
+    </div>
+    <dl class="task-status-grid">
+      <div>
+        <dt>任务状态</dt>
+        <dd id="taskEnabledValue">--</dd>
+      </div>
+      <div>
+        <dt>计划与补跑</dt>
+        <dd id="taskScheduleValue">--</dd>
+      </div>
+      <div>
+        <dt>最近更新检测</dt>
+        <dd id="taskLastCheckValue">--</dd>
+      </div>
+      <div>
+        <dt>本次判断</dt>
+        <dd id="taskDecisionValue">--</dd>
+      </div>
+      <div>
+        <dt>最近任务运行</dt>
+        <dd id="taskLastRunValue">--</dd>
+      </div>
+      <div>
+        <dt>下次计划运行</dt>
+        <dd id="taskNextRunValue">--</dd>
+      </div>
+      <div>
+        <dt>本月正式更新</dt>
+        <dd id="taskMonthValue">--</dd>
+      </div>
+      <div>
+        <dt>最近成功刷新</dt>
+        <dd id="taskLastRefreshValue">--</dd>
+      </div>
+    </dl>
+    <div class="task-status-footer">
+      <span id="taskStatusGeneratedAt">状态生成时间：--</span>
+      <span>错过周一计划后，Windows下次可用时自动补跑</span>
+    </div>
+  </dialog>
+
   <script src="dashboard-data.js"></script>
   <script src="dashboard-run-status.js"></script>
+  <script src="scheduler-status.js"></script>
   <script type="application/json" id="legacyRunStatusScript">
     (() => {
       const status = window.FTV_RUN_STATUS;

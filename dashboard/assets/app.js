@@ -18,7 +18,11 @@
 
   const el = {};
   [
-    "dataSubtitle", "dataAsOf", "importButton", "dataFileInput", "grainControl",
+    "dataSubtitle", "dataAsOf", "taskStatusButton", "taskStatusDialog", "taskStatusClose",
+    "taskStatusHealth", "taskStatusTitle", "taskStatusMessage", "taskEnabledValue",
+    "taskScheduleValue", "taskLastCheckValue", "taskDecisionValue", "taskLastRunValue",
+    "taskNextRunValue", "taskMonthValue", "taskLastRefreshValue", "taskStatusGeneratedAt",
+    "importButton", "dataFileInput", "grainControl",
     "startYear", "endYear", "customerButton", "customerLabel", "customerPopover",
     "customerOptions", "selectAllCustomers", "clearCustomers", "categoryFilter",
     "projectFilter", "regionFilter", "engineSearch", "resetFilters", "advancedFilters",
@@ -727,6 +731,66 @@
     toastTimer = setTimeout(() => { el.toast.hidden = true; }, 3200);
   }
 
+  function statusValue(value, fallback = "尚无记录") {
+    return value ? String(value) : fallback;
+  }
+
+  function renderTaskStatus() {
+    const status = window.FTV_SCHEDULER_STATUS;
+    if (!status) {
+      el.taskStatusHealth.dataset.health = "warning";
+      el.taskStatusTitle.textContent = "尚未生成任务状态";
+      el.taskStatusMessage.textContent = "请通过“打开出货量看板”入口重新打开页面。";
+      return;
+    }
+
+    const task = status.task || {};
+    const check = status.check || {};
+    const month = status.month || {};
+    const latestRefresh = status.latestRefresh || {};
+    el.taskStatusHealth.dataset.health = status.health || "unknown";
+    el.taskStatusTitle.textContent = status.healthTitle || "任务状态";
+    el.taskStatusMessage.textContent = status.healthMessage || "";
+    el.taskEnabledValue.textContent = !task.installed ? "未安装" : (task.enabled ? `已启用 · ${task.state || "Ready"}` : "已停用");
+    el.taskScheduleValue.textContent = `${statusValue(task.schedule, "每周一 09:00")} · ${task.catchUp ? "已启用补跑" : "未启用补跑"}`;
+    el.taskLastCheckValue.textContent = statusValue(check.lastCheckedAt);
+    el.taskDecisionValue.textContent = statusValue(check.decisionLabel, "尚未执行本机检查");
+    el.taskLastRunValue.textContent = task.lastRunAt
+      ? `${task.lastRunAt} · ${statusValue(task.lastResultText, task.lastResultCode || "未知")}`
+      : "尚未运行";
+    el.taskNextRunValue.textContent = statusValue(task.nextRunAt, "等待Windows计算");
+    el.taskMonthValue.textContent = month.updated
+      ? `已更新 · ${statusValue(month.completedAt)} · 截止 ${statusValue(month.cutoffDate, "--")}`
+      : "尚未更新";
+    el.taskLastRefreshValue.textContent = latestRefresh.completedAt
+      ? `${latestRefresh.completedAt} · 截止 ${statusValue(latestRefresh.cutoffDate, "--")}`
+      : "尚无成功记录";
+    el.taskStatusGeneratedAt.textContent = `状态生成时间：${statusValue(status.generatedAt, "--")}`;
+  }
+
+  function reloadTaskStatus() {
+    return new Promise((resolve) => {
+      const previous = document.getElementById("schedulerStatusReload");
+      if (previous) previous.remove();
+      const script = document.createElement("script");
+      script.id = "schedulerStatusReload";
+      script.src = `scheduler-status.js?t=${Date.now()}`;
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.head.appendChild(script);
+    });
+  }
+
+  function openTaskStatus() {
+    renderTaskStatus();
+    if (typeof el.taskStatusDialog.showModal === "function") {
+      el.taskStatusDialog.showModal();
+    } else {
+      el.taskStatusDialog.setAttribute("open", "");
+    }
+    reloadTaskStatus().then(renderTaskStatus);
+  }
+
   function resetFilters() {
     const auditOpen = el.auditSection.open;
     resetState();
@@ -771,6 +835,11 @@
   }
 
   function bindEvents() {
+    el.taskStatusButton.addEventListener("click", openTaskStatus);
+    el.taskStatusClose.addEventListener("click", () => el.taskStatusDialog.close());
+    el.taskStatusDialog.addEventListener("click", (event) => {
+      if (event.target === el.taskStatusDialog) el.taskStatusDialog.close();
+    });
     el.grainControl.addEventListener("click", (event) => {
       const button = event.target.closest("button[data-grain]");
       if (!button) return;
